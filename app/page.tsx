@@ -1,68 +1,69 @@
-import Image from "next/image";
+import Link from "next/link";
+import { listTemplates } from "../lib/mail-templates";
 
-export default function Home() {
+// Notion ist die Datenquelle, nicht statisch cachebar — ohne dies versucht
+// Next beim Build eine statische Seite zu erzeugen und schlägt fehl, sobald
+// die Notion-Integration (noch) keinen Zugriff auf die Datenquellen hat.
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const templates = await listTemplates();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="flex flex-1 flex-col bg-zinc-50 dark:bg-black">
+      <header className="border-b border-black/[.08] dark:border-white/[.145] px-8 py-6">
+        <h1 className="text-lg font-semibold">stl mail</h1>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          Mail Templates aus Notion — Komponenten, Inhalte und Vorschau.
+        </p>
+      </header>
+
+      <main className="flex-1 px-8 py-8 max-w-3xl w-full mx-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500 dark:text-zinc-400">
+            Vorlagen
+          </h2>
+          <Link
+            href="/components"
+            className="text-sm text-zinc-500 dark:text-zinc-400 hover:underline"
+          >
+            Komponenten verwalten →
+          </Link>
+        </div>
+
+        {templates.length === 0 && (
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            Keine Vorlagen gefunden. In Notion prüfen, ob die Integration Zugriff auf
+            &quot;Mail Templates&quot; hat.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+        )}
+
+        <ul className="divide-y divide-black/[.08] dark:divide-white/[.145] rounded-lg border border-black/[.08] dark:border-white/[.145] bg-white dark:bg-zinc-950">
+          {templates.map((t) => (
+            <li key={t.id}>
+              <Link
+                href={`/templates/${t.id}`}
+                className="flex items-center justify-between gap-4 px-4 py-3 hover:bg-black/[.03] dark:hover:bg-white/[.06]"
+              >
+                <div>
+                  <div className="font-medium">{t.name}</div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 font-mono">
+                    /{t.slug || "—"}
+                  </div>
+                </div>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full ${
+                    t.status === "Active"
+                      ? "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300"
+                      : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                  }`}
+                >
+                  {t.status}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </main>
     </div>
   );

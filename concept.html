@@ -1,0 +1,414 @@
+<!doctype html>
+<title>Mail-Baukasten Konzept</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Karla:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root{
+    --paper:#faf7f2;
+    --paper-raised:#ffffff;
+    --ink:#241f1a;
+    --ink-soft:#6b6156;
+    --rule:#e4dcd0;
+    --accent:#5b3a8e;
+    --accent-soft:#f1ecf9;
+    --accent-ink:#3f2968;
+    --code-bg:#211c17;
+    --code-text:#f1ece3;
+    --good:#3d6b4f;
+    --good-soft:#e9f1ea;
+  }
+  :root:not([data-theme="light"]) {
+    @media (prefers-color-scheme: dark) {
+      --paper:#191613;
+      --paper-raised:#221e19;
+      --ink:#efe8de;
+      --ink-soft:#a89e90;
+      --rule:#3a332b;
+      --accent:#b79bea;
+      --accent-soft:#2a2338;
+      --accent-ink:#d8c7f5;
+      --code-bg:#0f0d0a;
+      --code-text:#efe8de;
+      --good:#8fc9a3;
+      --good-soft:#1c2b21;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#191613;
+    --paper-raised:#221e19;
+    --ink:#efe8de;
+    --ink-soft:#a89e90;
+    --rule:#3a332b;
+    --accent:#b79bea;
+    --accent-soft:#2a2338;
+    --accent-ink:#d8c7f5;
+    --code-bg:#0f0d0a;
+    --code-text:#efe8de;
+    --good:#8fc9a3;
+    --good-soft:#1c2b21;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Karla',-apple-system,sans-serif;
+    text-wrap-style: pretty;
+  }
+  h1,h2,h3{font-family:'Fraunces',Georgia,serif; text-wrap:balance; letter-spacing:-0.01em;}
+  code, .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;}
+
+  .cover{
+    padding:6rem 8vw 4rem;
+    border-bottom:1px solid var(--rule);
+    position:relative;
+  }
+  .cover .eyebrow{
+    font-family:'IBM Plex Mono',monospace; font-size:0.78rem; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--accent-ink); margin:0 0 1.25rem;
+  }
+  .cover h1{font-size:clamp(2.4rem,5vw,3.6rem); font-weight:500; margin:0 0 1rem; max-width:16ch;}
+  .cover .dek{font-size:1.15rem; color:var(--ink-soft); max-width:60ch; line-height:1.6; margin:0;}
+  .cover .meta{display:flex; gap:2rem; margin-top:2.5rem; font-size:0.85rem; color:var(--ink-soft);}
+  .cover .meta strong{color:var(--ink); font-weight:600;}
+
+  .layout{display:flex; max-width:1180px; margin:0 auto;}
+  nav.toc{
+    width:230px; flex:none; padding:3rem 1.5rem 3rem 8vw;
+    position:sticky; top:0; align-self:flex-start; height:100vh; overflow-y:auto;
+  }
+  nav.toc .label{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--ink-soft); margin-bottom:0.9rem;}
+  nav.toc ol{list-style:none; margin:0; padding:0; counter-reset:toc;}
+  nav.toc li{counter-increment:toc; margin-bottom:0.6rem;}
+  nav.toc a{
+    color:var(--ink-soft); text-decoration:none; font-size:0.88rem; line-height:1.4; display:flex; gap:0.5rem;
+  }
+  nav.toc a::before{content:counter(toc,decimal-leading-zero); font-family:'IBM Plex Mono',monospace; color:var(--rule); flex:none;}
+  nav.toc a:hover{color:var(--accent-ink);}
+
+  main{flex:1; min-width:0; padding:3rem 8vw 6rem 3rem;}
+  section{max-width:68ch; margin:0 0 4.5rem;}
+  section:last-child{margin-bottom:2rem;}
+  section .num{font-family:'IBM Plex Mono',monospace; color:var(--accent-ink); font-size:0.85rem;}
+  section h2{font-size:1.7rem; font-weight:500; margin:0.3rem 0 1.1rem;}
+  section h3{font-size:1.15rem; font-weight:600; font-family:'Karla',sans-serif; margin:2rem 0 0.7rem;}
+  section p{line-height:1.75; margin:0 0 1.1rem; font-size:1rem;}
+  section ul, section ol{line-height:1.75; padding-left:1.3rem; margin:0 0 1.1rem;}
+  section li{margin-bottom:0.4rem;}
+  a{color:var(--accent-ink);}
+  strong{font-weight:700;}
+
+  .callout{
+    background:var(--accent-soft); border:1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius:10px; padding:1.1rem 1.3rem; margin:1.3rem 0; font-size:0.94rem; line-height:1.65;
+  }
+  .callout .tag{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent-ink); display:block; margin-bottom:0.4rem;}
+
+  .todo{
+    background:var(--good-soft); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
+    border-radius:10px; padding:1.1rem 1.3rem; margin:1.3rem 0; font-size:0.94rem; line-height:1.65;
+  }
+  .todo .tag{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.08em; color:var(--good); display:block; margin-bottom:0.4rem;}
+
+  pre{
+    background:var(--code-bg); color:var(--code-text); border-radius:10px; padding:1rem 1.2rem;
+    overflow-x:auto; font-size:0.82rem; line-height:1.6; margin:0 0 1.1rem;
+  }
+  pre code{font-family:'IBM Plex Mono',monospace;}
+  .field{color:#e8b374;}
+  .str{color:#9fd39a;}
+  .tok{color:#7fb8e0;}
+
+  table{border-collapse:collapse; width:100%; margin:0 0 1.1rem; font-size:0.92rem;}
+  th,td{text-align:left; padding:0.55rem 0.8rem; border-bottom:1px solid var(--rule); vertical-align:top;}
+  th{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--ink-soft); font-weight:500;}
+  td code{background:var(--paper-raised); border:1px solid var(--rule); border-radius:4px; padding:0.05rem 0.35rem; font-size:0.85em;}
+
+  .schema{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; margin:1.5rem 0 2rem;
+  }
+  @media (max-width: 720px){ .schema{grid-template-columns:1fr;} nav.toc{display:none;} main{padding-left:8vw;} }
+  .schema .box{
+    background:var(--paper-raised); border:1px solid var(--rule); border-radius:12px; padding:1.1rem 1.1rem 1.2rem;
+  }
+  .schema .box h4{font-family:'Fraunces',serif; font-size:1.05rem; font-weight:500; margin:0 0 0.15rem;}
+  .schema .box .sub{font-size:0.76rem; color:var(--ink-soft); margin-bottom:0.8rem;}
+  .schema .box ul{list-style:none; padding:0; margin:0; font-size:0.82rem; line-height:1.9;}
+  .schema .box li span{color:var(--ink-soft);}
+  .schema-arrow{
+    grid-column:1/-1; text-align:center; font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--ink-soft); letter-spacing:0.05em;
+  }
+
+  .flow{display:flex; flex-wrap:wrap; gap:0.6rem; align-items:center; margin:1.3rem 0 1.6rem;}
+  .flow .step{
+    background:var(--paper-raised); border:1px solid var(--rule); border-radius:8px; padding:0.55rem 0.9rem; font-size:0.85rem;
+  }
+  .flow .arrow{color:var(--ink-soft); font-size:1rem;}
+
+  .foot{max-width:68ch; padding:2rem 0 0; border-top:1px solid var(--rule); font-size:0.85rem; color:var(--ink-soft);}
+</style>
+
+<div class="cover">
+  <p class="eyebrow">Konzept · Interne Systeme · Stadtteilliebe</p>
+  <h1>Der Mail-Baukasten</h1>
+  <p class="dek">
+    Wie E-Mail-Vorlagen künftig aus Notion-Daten entstehen statt aus Code — und wie n8n und
+    das Editor-Tool <span class="mono">stl mail</span> dieselbe Quelle lesen.
+  </p>
+  <div class="meta">
+    <span><strong>Ausgangslage</strong> · email-builder.html von Annabell, Vorlagen als JS-Presets</span>
+    <span><strong>Betrifft</strong> · stl-inside, n8n, Notion</span>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc">
+    <div class="label">Inhalt</div>
+    <ol>
+      <li><a href="#ausgangslage">Ausgangslage</a></li>
+      <li><a href="#idee">Die Idee</a></li>
+      <li><a href="#datenmodell">Datenmodell</a></li>
+      <li><a href="#platzhalter">Zwei Platzhalter-Ebenen</a></li>
+      <li><a href="#rendering">Rendering-Pipeline</a></li>
+      <li><a href="#n8n">n8n-Integration</a></li>
+      <li><a href="#repo">Das Repo: stl mail</a></li>
+      <li><a href="#stand">Stand &amp; nächste Schritte</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="ausgangslage">
+      <span class="num">01</span>
+      <h2>Ausgangslage</h2>
+      <p>
+        Annabell hat mit <span class="mono">email-builder.html</span> ein Werkzeug gebaut, mit dem sich
+        E-Mails aus Komponenten (Überschrift, Text, Button, Status-Label, Crew-Signatur) zusammensetzen
+        und als fertiges HTML exportieren lassen. Es funktioniert gut für die Gestaltung — hat aber
+        drei strukturelle Grenzen:
+      </p>
+      <ul>
+        <li>Vorlagen leben als JavaScript-Presets <em>im Code</em> des Tools, nicht als Daten. Eine neue
+          Vorlage bedeutet: die HTML-Datei öffnen und Code ändern.</li>
+        <li>n8n kann diese Vorlagen nicht lesen. Deshalb liegt der Mail-Text für z. B. den Login-Link
+          oder die "Neues Ticket"-Bestätigung noch einmal separat, hart codiert, in den n8n-Workflows —
+          eine dritte Kopie desselben Inhalts.</li>
+        <li>Jede inhaltliche Änderung (andere Formulierung, neuer Baustein) braucht jemanden, der die
+          Exportdatei erneut in den Workflow einträgt. Kein gemeinsamer, aktueller Stand.</li>
+      </ul>
+      <p>
+        Es gibt zwar bereits eine Notion-Datenbank <span class="mono">Mail Templates</span> — dort liegt
+        aber pro Zeile ein komplettes HTML-Dokument als Textblock (genutzt z. B. für den monatlichen
+        "Website Performance Radar"-Report). Das löst das Problem nicht: der Inhalt ist zwar in Notion,
+        aber weiterhin ein undurchsichtiger HTML-Klumpen statt einzelner, wiederverwendbarer Bausteine.
+      </p>
+    </section>
+
+    <section id="idee">
+      <span class="num">02</span>
+      <h2>Die Idee</h2>
+      <p>
+        Design und Inhalt werden getrennt und beide wandern nach Notion — aber in zwei verschiedene
+        Tabellen, weil sie sich unterschiedlich oft und von unterschiedlichen Leuten ändern:
+      </p>
+      <ul>
+        <li><strong>Mail-Komponenten</strong> — <em>wie</em> ein Baustein-Typ aussieht. Ändert sich selten,
+          typischerweise wenn sich das visuelle Design ändert.</li>
+        <li><strong>Mail-Vorlagen</strong> (+ ihre Blöcke) — <em>was</em> in einer bestimmten Mail steht und
+          in welcher Reihenfolge. Ändert sich oft, ist reine Redaktionsarbeit.</li>
+      </ul>
+      <p>
+        n8n und das Editor-Tool lesen dieselben drei Notion-Tabellen und benutzen exakt denselben
+        Rendering-Code — die Vorschau im Editor <em>ist</em> also, byte-genau, das, was beim Versand
+        entsteht.
+      </p>
+    </section>
+
+    <section id="datenmodell">
+      <span class="num">03</span>
+      <h2>Datenmodell</h2>
+      <p>Drei neue Notion-Datenquellen unter der Seite <span class="mono">✉️ stl mail builder</span>:</p>
+
+      <div class="schema">
+        <div class="box">
+          <h4>Mail-Komponenten</h4>
+          <div class="sub">ein Baustein-Typ pro Zeile</div>
+          <ul>
+            <li>Name <span>— „Fließtext“</span></li>
+            <li>Design HTML <span>— &lt;tr&gt;&lt;td&gt;…</span></li>
+            <li>Feldschema <span>— JSON</span></li>
+            <li>Beschreibung</li>
+            <li>Status <span>— Active/Draft</span></li>
+          </ul>
+        </div>
+        <div class="box">
+          <h4>Mail-Vorlagen</h4>
+          <div class="sub">eine Mail pro Zeile</div>
+          <ul>
+            <li>Name <span>— „Neues Ticket“</span></li>
+            <li>Betreff</li>
+            <li>Webhook-Slug <span>— „neues-ticket“</span></li>
+            <li>Banner aktiv / Variante</li>
+            <li>Footer aktiv</li>
+            <li>Status</li>
+          </ul>
+        </div>
+        <div class="box">
+          <h4>Mail-Vorlagen-Blöcke</h4>
+          <div class="sub">ein Baustein-Einsatz pro Zeile</div>
+          <ul>
+            <li>Vorlage <span>— Relation</span></li>
+            <li>Komponente <span>— Relation</span></li>
+            <li>Reihenfolge</li>
+            <li>Aktiv</li>
+            <li>Inhalt <span>— JSON</span></li>
+          </ul>
+        </div>
+        <div class="schema-arrow">Mail-Vorlagen-Blöcke verbindet die anderen beiden — „Neues Ticket = Überschrift + Text + Button + Crew, in dieser Reihenfolge“</div>
+      </div>
+
+      <p>
+        Diese Aufteilung ist absichtlich Notion-nativ: Annabell sieht in der Vorlagen-Ansicht die
+        Blockliste als normale, sortierbare Unterzeilen — kein Datenbank-Wissen nötig, um zu verstehen,
+        woraus eine Mail besteht.
+      </p>
+
+      <div class="callout">
+        <span class="tag">Technischer Stolperstein</span>
+        Die Notion-API lehnt es ab, eine Text-Property zu speichern, deren kompletter Inhalt sich als
+        JSON-Array oder -Objekt parsen lässt (offenbar eine interne Validierungs-Heuristik, kein
+        dokumentiertes Verhalten). „Feldschema“ und „Inhalt“ tragen deshalb ein technisches
+        <code>json:</code>-Präfix, das <code>lib/notion.js</code> beim Lesen/Schreiben transparent
+        entfernt bzw. ergänzt. Wer die Notion-Tabelle direkt öffnet, sieht diesen Präfix — die
+        eigentliche Bearbeitung findet aber ohnehin im <span class="mono">stl mail</span>-Editor statt,
+        nicht in der rohen Notion-Zelle.
+      </div>
+    </section>
+
+    <section id="platzhalter">
+      <span class="num">04</span>
+      <h2>Zwei Platzhalter-Ebenen</h2>
+      <p>
+        Zwei Arten von Platzhaltern kommen im selben Text vor, dürfen aber nicht verwechselt werden:
+      </p>
+      <table>
+        <tr><th>Syntax</th><th>Beispiel</th><th>Wo</th><th>Wird ersetzt durch</th></tr>
+        <tr>
+          <td><code>[[feld]]</code></td>
+          <td><code>[[text]]</code></td>
+          <td>„Design HTML“ einer Komponente</td>
+          <td>den Inhalt eines einzelnen Blocks — einmalig, beim Zusammenbau der Mail</td>
+        </tr>
+        <tr>
+          <td><code>{{TOKEN}}</code></td>
+          <td><code>{{TICKET_URL}}</code></td>
+          <td>„Betreff“/„Inhalt“ in Notion</td>
+          <td>echte Werte aus n8n — erst beim tatsächlichen Versand, bleibt bis dahin sichtbar stehen</td>
+        </tr>
+      </table>
+      <p>
+        Ein Beispiel aus der Vorlage „Neues Ticket“ macht den Unterschied greifbar. Der Fließtext-Block
+        trägt in Notion als Inhalt:
+      </p>
+      <pre><code>{ "<span class="field">text</span>": "<span class="str">wir haben deine Anfrage als neue Aufgabe angelegt: **{{TICKET_TITEL}}**</span>", "<span class="field">weight</span>": "<span class="str">regular</span>" }</code></pre>
+      <p>
+        Beim Rendern setzt die Komponente „Fließtext“ diesen Wert an die Stelle von
+        <code>[[text]]</code> in ihrem Design-HTML. <code>{{TICKET_TITEL}}</code> bleibt dabei
+        unangetastet stehen — das übernimmt erst der zweite, spätere Schritt, wenn n8n den echten
+        Ticket-Titel aus dem Webhook mitschickt.
+      </p>
+    </section>
+
+    <section id="rendering">
+      <span class="num">05</span>
+      <h2>Rendering-Pipeline</h2>
+      <p>Ein Aufruf, vier Schritte — identisch, ob im Editor oder für n8n:</p>
+      <div class="flow">
+        <div class="step">Vorlage + Blöcke laden</div>
+        <span class="arrow">→</span>
+        <div class="step">jeden Block mit seiner Komponente rendern</div>
+        <span class="arrow">→</span>
+        <div class="step">Banner + Blöcke + Footer zusammensetzen</div>
+        <span class="arrow">→</span>
+        <div class="step">Laufzeit-Tokens ersetzen</div>
+      </div>
+      <p>
+        Der komplette Code dafür liegt an <em>einer</em> Stelle: <code>lib/mail-render.js</code> im
+        Repo <span class="mono">stl mail</span> — bewusst ohne Node- oder Notion-Abhängigkeiten, damit
+        dieselbe Funktion unverändert im Browser (Live-Vorschau) und auf dem Server
+        (<code>/api/render</code> für n8n) läuft. Es gibt also keine zweite Kopie der Rendering-Logik,
+        die aus dem Takt geraten könnte.
+      </p>
+    </section>
+
+    <section id="n8n">
+      <span class="num">06</span>
+      <h2>n8n-Integration</h2>
+      <p>
+        Heute schreibt z. B. der Workflow „Stadtteilliebe Inside – Neues Ticket Benachrichtigung“ den
+        Mailtext direkt in den Send-Email-Node. Migration in einem Schritt: ein HTTP-Request-Node vor
+        dem Send-Email-Node ruft <code>POST /api/render</code> auf —
+      </p>
+      <pre><code>{ "<span class="field">slug</span>": "<span class="str">neues-ticket</span>", "<span class="field">tokens</span>": { "<span class="field">contactName</span>": "<span class="tok">{{ $json.body.contactName }}</span>", "<span class="field">title</span>": "<span class="tok">{{ $json.body.title }}</span>", "<span class="field">ticketUrl</span>": "<span class="tok">{{ $json.body.ticketUrl }}</span>", "<span class="field">projectName</span>": "<span class="tok">{{ $json.body.projectName }}</span>" } }</code></pre>
+      <p>
+        — und übernimmt <code>subject</code>/<code>html</code> aus der Antwort. Ab diesem Zeitpunkt kann
+        Annabell den Wortlaut einer Mail in Notion ändern, ohne dass jemand den n8n-Workflow anfassen
+        muss. Diese Umstellung ist bewusst <strong>nicht</strong> Teil dieses ersten Schritts — die
+        bestehenden Workflows laufen unverändert weiter, bis die Redaktion in Notion sich bewährt hat.
+      </p>
+    </section>
+
+    <section id="repo">
+      <span class="num">07</span>
+      <h2>Das Repo: stl mail</h2>
+      <p>
+        Next.js-App nach demselben Zuschnitt wie stl-inside/stl-prism, gegen dieselben drei
+        Notion-Tabellen:
+      </p>
+      <ul>
+        <li><code>/</code> — Liste aller Vorlagen.</li>
+        <li><code>/templates/[id]</code> — Editor: Vorlage-Metadaten, Blockliste mit ↑/↓-Reihenfolge,
+          Aktiv-Schalter, schema-generierte Eingabefelder je Baustein, Live-Vorschau als iframe, plus
+          ein Testdaten-Feld, das die Laufzeit-Tokens simuliert.</li>
+        <li><code>/components</code> — Design HTML und Feldschema der Bausteine pflegen.</li>
+        <li><code>POST /api/render</code> — die Schnittstelle für n8n.</li>
+      </ul>
+      <p>
+        Bewusst <em>nicht</em> in dieser ersten Version: Drag&amp;Drop-Umsortieren (Pfeiltasten reichen
+        für die kleinen Blocklisten), Undo/Redo, eine eigene UI für Status-Badges (kommt vorerst als
+        JSON-Textfeld). Alles Verbesserungen, die sich nachrüsten lassen, sobald der Grundaufbau sich in
+        der Praxis bewährt hat.
+      </p>
+    </section>
+
+    <section id="stand">
+      <span class="num">08</span>
+      <h2>Stand &amp; nächste Schritte</h2>
+      <p>Bereits erledigt:</p>
+      <ul>
+        <li>Die drei Notion-Tabellen sind angelegt, unter der bestehenden Seite „✉️ stl mail builder“.</li>
+        <li>Fünf Komponenten sind eingerichtet (Überschrift, Fließtext, Button mit Link, Status-Label,
+          stl Crew) — 1:1 aus dem bisherigen email-builder.html übernommen.</li>
+        <li>Die zwei bestehenden Vorlagen „Login“ und „Neues Ticket“ sind mit ihren Blöcken befüllt und
+          bereit zum Testen.</li>
+        <li>Das Repo <span class="mono">stl mail</span> ist aufgesetzt: Editor, Komponenten-Verwaltung,
+          Render-API, Build läuft grün.</li>
+      </ul>
+      <div class="todo">
+        <span class="tag">Ein manueller Schritt fehlt noch</span>
+        Die Notion-Integration hinter dem <code>NOTION_TOKEN</code> von stl-inside/stl-prism hat noch
+        keinen Zugriff auf die drei neuen Tabellen — Notion verlangt das pro Seite explizit. In Notion
+        einmalig: Seite „✉️ stl mail builder“ öffnen → <code>•••</code> → Verbindungen → dieselbe
+        Integration hinzufügen, die auch stl-inside nutzt. Danach läuft <span class="mono">npm run
+        dev</span> im Repo <span class="mono">stl mail</span> gegen echte Daten.
+      </div>
+      <p>Danach, in Ruhe und nicht Teil dieses Schritts:</p>
+      <ul>
+        <li>Den n8n-Workflow „Neues Ticket Benachrichtigung“ auf <code>/api/render</code> umstellen.</li>
+        <li>Weitere bestehende Mails (Ticket-Status-Wechsel) als Vorlage nachbauen.</li>
+        <li>Die alte, flache <span class="mono">Mail Templates</span>-Datenbank (Website Performance
+          Radar) bleibt vorerst unverändert bestehen — anderer Anwendungsfall, kein Baukasten-Bedarf
+          erkennbar.</li>
+      </ul>
+    </section>
+
+    <p class="foot">Konzept · stl mail · September 2026</p>
+  </main>
+</div>
