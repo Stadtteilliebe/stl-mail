@@ -45,9 +45,12 @@ voneinander.
 
 - `[[feldname]]` in "Design HTML" — Komponenten-Platzhalter, wird beim
   Rendern aus dem `content` des jeweiligen Blocks aufgelöst.
-- `{{TOKEN}}` in "Betreff"/`content`-Werten — Laufzeit-Platzhalter (z.B.
-  `{{TICKET_URL}}`), bleibt in Notion stehen und wird erst beim
-  tatsächlichen Versand mit echten Werten aus n8n ersetzt.
+- `{{TOKEN}}` in "Betreff"/`content`-Werten — Laufzeit-Platzhalter, bleibt
+  in Notion stehen und wird erst beim tatsächlichen Versand mit echten
+  Werten aus n8n ersetzt. Konvention: Punkt-Pfade `ENTITÄT.EREIGNIS.FELD`
+  (z.B. `{{TICKET.CREATE.TITLE}}`, `{{AUTH.LOGIN.URL}}`) — der Token-Name
+  IST der Pfad in das JSON-Objekt, das n8n mitschickt, ganz ohne feste
+  Whitelist im Code (siehe `substituteRuntimeTokens()`).
 
 **Technische Hinweise:**
 
@@ -79,29 +82,60 @@ voneinander.
   Komponente mit eigener Live-Vorschau samt Beispieldaten und
   Desktop/Tablet/Handy-Umschalter.
 - `POST /api/render` — von n8n aufgerufen: `{ "slug": "neues-ticket",
-  "tokens": { "contactName": "...", "ticketUrl": "..." } }` →
-  `{ "subject": "...", "html": "..." }`. Dieselbe Rendering-Logik wie die
+  "tokens": { "TICKET": { "CREATE": { "TITLE": "...", "URL": "..." } } } }`
+  → `{ "subject": "...", "html": "..." }`. Dieselbe Rendering-Logik wie die
   Live-Vorschau (`lib/mail-render.js`), damit Vorschau und versendete Mail
-  nie auseinanderlaufen.
+  nie auseinanderlaufen. Geschützt über einen API-Key-Header (siehe unten),
+  nicht über das Login — n8n ist kein Browser und kann kein Session-Cookie
+  mitschicken.
+
+## Zugriff / Login
+
+Geschützt per Magic Link, analog zu stl-inside, aber ohne eigene
+Contacts-Datenbank: erlaubt ist jede `@stadtteilliebe.de`-Adresse (siehe
+`app/login/actions.ts`). `proxy.ts` sperrt `/`, `/templates/*` und
+`/components/*` hinter einem signierten Session-Cookie (`lib/session.js`,
+handgerolltes HMAC-Token, 7 Tage gültig, gleicher Mechanismus wie
+stl-inside).
+
+`POST /api/render` läuft bewusst **nicht** über dieses Login — das ist ein
+Server-zu-Server-Aufruf von n8n, kein Browser, der ein Cookie mitschicken
+könnte. Stattdessen prüft die Route einen `x-api-key`-Header gegen
+`STL_MAIL_API_KEY`; n8n schickt den Key über eine eigene
+`httpHeaderAuth`-Credential ("stl mail API key") mit, nicht hart codiert
+im Workflow-JSON.
+
+Lokal (`next dev`) `DEV_BYPASS_AUTH=true` setzen, um das Login-Gate zu
+umgehen — genau wie `DEV_CONTACT_EMAIL` bei stl-inside.
 
 ## Setup
 
 ```bash
 npm install
-cp .env.local.example .env.local   # NOTION_TOKEN eintragen, falls nicht vorhanden
+cp .env.local.example .env.local   # Werte eintragen, siehe unten
 npm run dev
 ```
+
+Benötigte Env-Vars (production + lokal in `.env.local`):
+
+| Variable | Zweck |
+|---|---|
+| `NOTION_TOKEN` | Zugriff auf Mail Components/Templates |
+| `SESSION_SECRET` | HMAC-Secret für Login-/Session-Tokens |
+| `N8N_MAIL_MAGIC_LINK_WEBHOOK_URL` | n8n-Workflow "stl mail - Magic Link Mail" |
+| `MAIL_BASE_URL` | Basis-URL für den Link in der Login-Mail |
+| `STL_MAIL_API_KEY` | Erwarteter `x-api-key`-Wert für `/api/render` |
+| `DEV_BYPASS_AUTH` | Nur lokal: Login-Gate umgehen |
 
 **Wichtig:** Die Notion-Integration hinter `NOTION_TOKEN` muss Zugriff auf
 die beiden Datenquellen oben haben (in Notion: Seite/DB öffnen → ••• →
 Verbindungen → Integration hinzufügen), sonst schlägt jede Abfrage mit
 einem 404/"nicht gefunden" fehl.
 
-## n8n-Integration (Ausblick)
+## n8n-Integration
 
-Bestehende Workflows wie "Stadtteilliebe Inside - Neues Ticket
-Benachrichtigung" senden Mails aktuell noch mit hart codiertem Text im
-n8n-eigenen Send-Email-Node. Migration: HTTP-Request-Node vor den
-Send-Email-Node, der `POST /api/render` mit `{slug, tokens}` aufruft und
-`subject`/`html` in die Mail übernimmt — Annabell kann Inhalte dann in
-Notion pflegen, ohne dass jemand den n8n-Workflow anfassen muss.
+Der Workflow "Stadtteilliebe Inside - Neues Ticket Benachrichtigung" ruft
+vor dem Send-Email-Node `POST /api/render` auf (Node "Mail rendern (stl
+mail)", mit der `httpHeaderAuth`-Credential "stl mail API key") und
+übernimmt `subject`/`html` direkt in die Mail — Annabell kann Inhalte
+seitdem in Notion pflegen, ohne den n8n-Workflow anzufassen.

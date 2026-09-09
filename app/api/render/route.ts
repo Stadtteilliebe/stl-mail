@@ -7,7 +7,16 @@ import { renderTemplate } from "../../../lib/mail-render";
 // zu einer versandfertigen Mail zusammenzubauen. Einziger Ort, an dem die
 // Rendering-Logik läuft — dieselbe wie im Editor, damit Vorschau und
 // tatsächlich versendete Mail nie auseinanderlaufen.
+//
+// Server-zu-Server-Aufruf (n8n), kein Browser — deshalb kein Session-
+// Cookie wie beim Rest der App (proxy.ts schließt diese Route bewusst aus),
+// sondern ein statischer API-Key-Header, den n8n mitschickt.
 export async function POST(req: NextRequest) {
+  const apiKey = req.headers.get("x-api-key");
+  if (!process.env.STL_MAIL_API_KEY || apiKey !== process.env.STL_MAIL_API_KEY) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await req.json().catch(() => null);
   const slug = body?.slug;
   const tokens = body?.tokens ?? {};

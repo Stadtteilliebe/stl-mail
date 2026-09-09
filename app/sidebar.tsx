@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MailIcon, BlocksIcon } from "./icons";
+import { logoutAction } from "./actions";
 
 // Nur zwei Bereiche — mehr braucht dieses kleine Tool nicht, deshalb keine
 // Primary/Secondary-Trennung wie in stl-prism. Gleiche Sidebar-Mechanik
@@ -74,18 +75,29 @@ export function Sidebar() {
 
       {/* Desktop: fixiert, damit sie beim Scrollen sichtbar bleibt —
           Hauptinhalt gleicht die Breite per padding aus (siehe layout.tsx). */}
-      <aside className="hidden md:flex md:fixed md:inset-y-0 md:left-0 w-60 border-r border-black/[.08] flex-col dark:border-white/[.145]">
-        <div className="h-24 flex items-center border-b border-black/[.08] px-6 dark:border-white/[.145]">
-          <Link href="/" className="text-lg font-bold tracking-tight">
-            stl mail
-          </Link>
+      <aside className="hidden md:flex md:fixed md:inset-y-0 md:left-0 w-60 border-r border-black/[.08] flex-col justify-between dark:border-white/[.145]">
+        <div>
+          <div className="h-24 flex items-center border-b border-black/[.08] px-6 dark:border-white/[.145]">
+            <Link href="/" className="text-lg font-bold tracking-tight">
+              stl mail
+            </Link>
+          </div>
+
+          <nav className="flex flex-col gap-1 px-4 pt-6">
+            {NAV_ITEMS.map((item) => (
+              <NavLink key={item.href} {...item} active={isActive(pathname, item.activeOn)} />
+            ))}
+          </nav>
         </div>
 
-        <nav className="flex flex-col gap-1 px-4 pt-6">
-          {NAV_ITEMS.map((item) => (
-            <NavLink key={item.href} {...item} active={isActive(pathname, item.activeOn)} />
-          ))}
-        </nav>
+        <form action={logoutAction} className="px-6 py-6">
+          <button
+            type="submit"
+            className="text-xs text-zinc-400 underline transition-colors hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300"
+          >
+            Logout
+          </button>
+        </form>
       </aside>
     </>
   );
