@@ -38,12 +38,25 @@ type Template = {
   status: string;
 };
 
+// Punkt-Pfade (ENTITÄT.EREIGNIS.FELD), gleiche Konvention wie n8n sie beim
+// echten Versand mitschickt — siehe substituteRuntimeTokens() in
+// lib/mail-render.js. Enthält Beispielwerte für alle Vorlagen gemeinsam,
+// damit unabhängig davon, welche Vorlage gerade offen ist, ihre Tokens
+// auflösen.
 const DEFAULT_TOKENS = `{
-  "contactName": "Max Mustermann",
-  "title": "Beispiel-Ticket",
-  "ticketUrl": "https://inside.stadtteilliebe.de/tickets/beispiel",
-  "projectName": "Beispiel-Projekt",
-  "loginUrl": "https://inside.stadtteilliebe.de/auth/verify?token=beispiel"
+  "TICKET": {
+    "CREATE": {
+      "TITLE": "Beispiel-Ticket",
+      "URL": "https://inside.stadtteilliebe.de/tickets/beispiel",
+      "CONTACT_NAME": "Max Mustermann",
+      "PROJECT_NAME": "Beispiel-Projekt"
+    }
+  },
+  "AUTH": {
+    "LOGIN": {
+      "URL": "https://inside.stadtteilliebe.de/auth/verify?token=beispiel"
+    }
+  }
 }`;
 
 export function TemplateEditor({
