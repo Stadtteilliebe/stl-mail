@@ -14,26 +14,27 @@ Zwei Notion-Datenquellen (unter der Seite "✉️ stl mail builder" in
 Notion → Knowledge → Systems):
 
 - **Mail Components** — ein Baustein-*Typ* pro Zeile (Überschrift,
-  Fließtext, Button, Status-Label, stl Crew, plus die strukturellen
-  Komponenten **Banner** und **Footer**). Pflegt nur das visuelle
-  `<tr><td>`-HTML-Fragment (`Design HTML`) und welche Inhaltsfelder der
-  Baustein hat (`Feldschema`, JSON). Wird selten geändert — nur wenn sich
-  das Design eines Bausteintyps ändert.
+  Fließtext, Button, Bild, Status-Label, stl Crew, plus die strukturelle
+  Komponente **Footer**). Pflegt nur das visuelle `<tr><td>`-HTML-Fragment
+  (`Design HTML`) und welche Inhaltsfelder der Baustein hat (`Feldschema`,
+  JSON). Wird selten geändert — nur wenn sich das Design eines
+  Bausteintyps ändert.
 - **Mail Templates** — eine konkrete Mail pro Zeile (z.B. "Neues Ticket",
-  "Login"). Betreff, Banner an/aus + Variante, Footer an/aus, Status
-  (Active/Draft), der `Webhook-Slug`, über den n8n die Vorlage anfragt,
-  und `Blocks` — ein JSON-Array direkt auf der Vorlage, das referenziert,
-  welche Components in welcher Reihenfolge mit welchem Inhalt verwendet
-  werden: `[{ "componentId": "...", "enabled": true, "content": {...} }]`.
-  Es gibt bewusst **keine** separate Bloecke-Tabelle — eine Vorlage
+  "Login"). Betreff, Footer an/aus, Status (Active/Draft), der
+  `Webhook-Slug`, über den n8n die Vorlage anfragt, und `Blocks` — ein
+  JSON-Array direkt auf der Vorlage, das referenziert, welche Components
+  in welcher Reihenfolge mit welchem Inhalt verwendet werden:
+  `[{ "componentId": "...", "enabled": true, "content": {...} }]`. Es
+  gibt bewusst **keine** separate Bloecke-Tabelle — eine Vorlage
   referenziert ihre Components direkt.
 
-Banner und Footer sind selbst ganz normale Mail Components (per Namen
-gefunden), werden aber nicht über die `Blocks`-Liste ein-/ausgeschaltet,
-sondern weiterhin über die eigenen Vorlagen-Schalter ("Banner aktiv"/
-"Footer aktiv" + "Banner-Variante"), weil sie strukturell (immer oben/
-unten) sind, nicht Teil der umsortierbaren Inhalts-Bausteine. Im
-"+ Block"-Picker im Editor tauchen sie deshalb nicht auf.
+Ein Banner ist keine strukturelle Sonderrolle mehr, sondern einfach die
+**Bild**-Komponente (ein Feld: `src`, eine Bild-URL) wie jeder andere
+Baustein auch — normal über "+ Block" hinzufügen, verschieben,
+ein-/ausschalten. Nur **Footer** bleibt strukturell: er wird nicht über
+die `Blocks`-Liste gesteuert, sondern über den eigenen Vorlagen-Schalter
+"Footer aktiv", weil er immer unten steht statt Teil der umsortierbaren
+Bausteine zu sein — deshalb taucht er auch nicht im "+ Block"-Picker auf.
 
 Die bereits vorher bestehende, flache Vorlagen-Tabelle (für den
 "Website Performance Radar"-Report) wurde in **Mail Reports** umbenannt,

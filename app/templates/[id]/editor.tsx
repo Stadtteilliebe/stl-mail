@@ -32,8 +32,6 @@ type Template = {
   name: string;
   slug: string;
   subject: string;
-  bannerEnabled: boolean;
-  bannerVariant: string;
   footerEnabled: boolean;
   status: string;
 };
@@ -155,22 +153,6 @@ export function TemplateEditor({
             defaultValue={meta.subject}
             onBlur={(e) => saveMeta({ subject: e.target.value })}
           />
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={meta.bannerEnabled}
-              onChange={(e) => saveMeta({ bannerEnabled: e.target.checked })}
-            />
-            <span className="text-sm flex-1">Banner</span>
-            <select
-              className="text-sm border border-black/[.08] dark:border-white/[.145] rounded-md px-1.5 py-1 bg-transparent"
-              value={meta.bannerVariant}
-              onChange={(e) => saveMeta({ bannerVariant: e.target.value })}
-            >
-              <option value="light">Helles Lila</option>
-              <option value="dark">Schwarz</option>
-            </select>
-          </div>
           <div className="flex items-center gap-2">
             <input
               type="checkbox"

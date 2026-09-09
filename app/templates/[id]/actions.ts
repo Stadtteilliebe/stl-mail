@@ -29,7 +29,7 @@ export async function toggleBlockEnabledAction(templateId: string, index: number
 
 export async function saveTemplateMetaAction(
   templateId: string,
-  fields: { subject?: string; bannerEnabled?: boolean; bannerVariant?: string; footerEnabled?: boolean }
+  fields: { subject?: string; footerEnabled?: boolean }
 ) {
   await updateTemplateMeta(templateId, fields);
   revalidatePath(`/templates/${templateId}`);

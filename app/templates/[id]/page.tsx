@@ -11,10 +11,10 @@ export default async function TemplatePage({ params }: { params: Promise<{ id: s
   const { id } = await params;
   const [template, components] = await Promise.all([getTemplateById(id), listComponents()]);
   const blocks = resolveTemplateBlocks(template, components);
-  // Banner/Footer sind strukturelle Components, keine wählbaren Bloecke —
-  // im "+ Block"-Picker sollen nur die eigentlichen Inhalts-Bausteine
-  // erscheinen.
-  const pickableComponents = components.filter((c) => c.name !== "Banner" && c.name !== "Footer");
+  // Footer ist die einzige noch strukturelle Component (eigener Vorlagen-
+  // Schalter statt Teil der Bloecke-Liste) — Banner ist inzwischen ein
+  // normaler "Bild"-Baustein und taucht deshalb im Picker mit auf.
+  const pickableComponents = components.filter((c) => c.name !== "Footer");
 
   return (
     <div className="flex min-h-screen flex-col">
