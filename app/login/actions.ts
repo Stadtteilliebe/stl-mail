@@ -31,11 +31,14 @@ export async function requestMagicLink(_prevState: unknown, formData: FormData) 
 
     const webhookUrl = process.env.N8N_MAIL_MAGIC_LINK_WEBHOOK_URL;
     if (!webhookUrl) throw new Error("N8N_MAIL_MAGIC_LINK_WEBHOOK_URL ist nicht gesetzt.");
-    await fetch(webhookUrl, {
+    // fetch() wirft nur bei Netzwerkfehlern, nicht bei HTTP-Fehlerstatus —
+    // ohne diesen Check würde ein 4xx/5xx von n8n unbemerkt bleiben.
+    const res = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, link }),
     });
+    if (!res.ok) console.error(`Magic-Link-Mail: n8n antwortete mit Status ${res.status}.`);
   }
 
   return { sent: true, error: null };
