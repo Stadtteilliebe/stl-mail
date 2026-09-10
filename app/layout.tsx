@@ -19,8 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "stl mail",
-  description: "Mail Templates aus Notion bauen und testen",
+  title: "Stadtteilliebe — Mail",
+  description:
+    "Aus Gedanken werden Worte, aus Worten werden Mails, die ankommen. Wir formen gemeinsam, was Nähe schafft, Zeile für Zeile.",
 };
 
 // Bewusst nur Fonts/globales CSS — die Sidebar lebt in (shell)/layout.tsx,
